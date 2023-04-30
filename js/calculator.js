@@ -39,23 +39,44 @@ let valueFromDisplay;
 
 /* Provides visual feedback upon button presses when no characters will be
     added to the display */
-const blinkTheDisplay = function() {
+const blinkCalculatorDisplay = function() {
   display.classList.add('blink-display');
   setTimeout(() => display.classList.remove('blink-display'), 100);
 };
 
-const displayPressedButton = function(character) {
-  const maximumDigits = 8; // Max characters limited by calculator's display
-  if (display.innerText.length < maximumDigits) {
-    display.innerText === '0' ?
-     display.innerText = character : display.innerText += character;
+const defaultZero = '0';
+
+const displayPressedButton = function(buttonValue) {
+  const characterLimit = 8;
+  if (!(display.innerText.length >= characterLimit)) {
+    if (display.innerText === defaultZero) {
+      if (buttonValue === '0') { // Do not accept leading zeros as input
+        blinkCalculatorDisplay();
+      } else { // Accept first digit of input
+        display.innerText = buttonValue;
+      }
+    } else { // Accept subsequent digit of input
+      if (buttonValue === '.' && display.innerText.includes('.')) {
+        // Prevent multiple decimal points
+        blinkCalculatorDisplay();
+      } else {
+        display.innerText += buttonValue;
+      }
+    }
      valueFromDisplay = Number.parseFloat(display.innerText);
-  } else {
-    blinkTheDisplay();
+  } else { // Display was already full before button press
+    blinkCalculatorDisplay();
   }
 };
 
-const clearDisplay = () => display.innerText = '0';
+//const clearDisplay = () => display.innerText = '0';
+const clearDisplay = function() {
+  if (display.innerText === defaultZero) { // Display is already cleared
+    blinkCalculatorDisplay();
+  } else {
+    display.innerText = defaultZero;
+  }
+};
 
 document.querySelector('.clear-button').addEventListener('click',
  clearDisplay);
@@ -66,4 +87,4 @@ digitButtons.forEach(button => button.addEventListener('click', () =>
  displayPressedButton(button.dataset.number)));
 
 document.querySelectorAll('.operator-button').forEach(button =>
- button.addEventListener('click', () => blinkTheDisplay()));
+ button.addEventListener('click', () => blinkCalculatorDisplay()));
