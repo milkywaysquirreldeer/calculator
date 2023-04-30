@@ -3,12 +3,12 @@ footer {
   background-color: #dec470;
 }
 
-footer {
-  height: 5vh;
-}
-
 header {
   height: 10vh;
+}
+
+footer {
+  height: 5vh;
 }
 
 .container {
@@ -75,9 +75,41 @@ button {
   width: 376px;
 }
 
+.blink-display {
+  color: #d4cbc3;
+}
+
 .display,
 .calc-button-row > button {
   border-radius: 6px;
+}
+
+.placeholder-button {
+  cursor: default;
+}
+
+.calc-button-row > .clear-button {
+  background-color: #c56070;
+  color: white;
+  font-size: 28px;
+}
+
+.calc-button-row > .clear-button:hover {
+  background-color: white;
+  color: #c56070;
+}
+
+.calc-button-row > .clear-button:active {
+  background-color: #ffe280;
+  color: #c56070;
+}
+
+.operator-button {
+  background-color: #b8bdc3;
+}
+
+.calc-button-row > button {
+  flex: 1;
 }
 
 .calc-buttons {
@@ -85,6 +117,10 @@ button {
   flex-direction: column;
   height: 400px;
   width: 400px;
+}
+
+.small-buttons-row {
+  justify-content: right;
 }
 
 .calc-button-row {

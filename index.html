@@ -12,33 +12,39 @@
       <main class="content-panel">
         <div class="calculator">
           <div class="display-container">
-            <div class="display">88888888</div>
+            <div class="display">0</div>
           </div>
           <div class="calc-buttons-container">
             <div class="calc-buttons">
-              <div class="calc-button-row">
-               <button class="7">7</button>
-               <button class="8">8</button>
-               <button class="9">9</button>
-               <button class="/">&divide;</button>
+              <div class="calc-button-row small-buttons-row">
+              <button class="placeholder-button"></button> 
+              <button class="placeholder-button"></button> 
+              <button class="placeholder-button"></button> 
+                <button class="clear-button">C</button>
               </div>
               <div class="calc-button-row">
-               <button class="4">4</button>
-               <button class="5">5</button>
-               <button class="6">6</button>
-               <button class="*">&times;</button>
+               <button class="digit-button" data-number="7">7</button>
+               <button class="digit-button" data-number="8">8</button>
+               <button class="digit-button" data-number="9">9</button>
+               <button class="operator-button" data-operator="/">&divide;</button>
               </div>
               <div class="calc-button-row">
-               <button class="1">1</button>
-               <button class="2">2</button>
-               <button class="3">3</button>
-               <button class="-">-</button>
+               <button class="digit-button" data-number="4">4</button>
+               <button class="digit-button" data-number="5">5</button>
+               <button class="digit-button" data-number="6">6</button>
+               <button class="operator-button" data-operator="*">&times;</button>
               </div>
               <div class="calc-button-row">
-               <button class="0">0</button>
-               <button class=".">.</button>
-               <button class="=">=</button>
-               <button class="+">+</button>
+               <button class="digit-button" data-number="1">1</button>
+               <button class="digit-button" data-number="2">2</button>
+               <button class="digit-button" data-number="3">3</button>
+               <button class="operator-button" data-operator="-">-</button>
+              </div>
+              <div class="calc-button-row">
+               <button class="digit-button" data-number="0">0</button>
+               <button class="digit-button" data-number=".">.</button>
+               <button class="operator-button" data-operator="=">=</button>
+               <button class="operator-button" data-operator="+">+</button>
               </div>
             </div>
           </div>
