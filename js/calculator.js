@@ -1,90 +1,144 @@
-const add = function (x, y) {
-  return x + y;
-}
-
-const subtract = function (x, y) {
-  return x - y;
-}
-
-const multiply = function (x, y) {
-  return x * y;
-}
-
-const divide = function (x, y) {
-  return x / y;
-}
-
-let firstNumber;
-let operator;
-let secondNumber;
-const display = document.querySelector('.display');
-
-const operate = function(operator, firstNumber, secondNumber) {
-  switch(operator) {
-    case '+':
-      display.innerText = add(firstNumber, secondNumber);
-      break;
-    case '-':
-      display.innerText = subtract(firstNumber, secondNumber);
-      break;
-    case '*':
-      display.innerText = multiply(firstNumber, secondNumber);
-      break;
-    case '/':
-      display.innerText = divide(firstNumber, secondNumber);
-  }
+const calc = {
+  display: {
+    floatValue: 0,
+    showingDefaultValue: true,
+  },
+  equation: {
+    operator: undefined,
+    firstNumber: undefined,
+    secondNumber: undefined,
+  },
+  history: {
+    lastCalculation: undefined,
+    lastInputAccepted: undefined,
+  },
 };
 
-let valueFromDisplay;
+const displayElement = document.querySelector('.display');
 
 /* Provides visual feedback upon button presses when no characters will be
-    added to the display */
-const blinkCalculatorDisplay = function() {
-  display.classList.add('blink-display');
-  setTimeout(() => display.classList.remove('blink-display'), 100);
+    changed in the display */
+const blinkDisplay = function() {
+  displayElement.classList.add('blink-display');
+  setTimeout(() => displayElement.classList.remove('blink-display'), 100);
 };
 
-const defaultZero = '0';
+const writeToDisplay = function(buttonValue) {
+  displayElement.innerText = buttonValue;
+};
 
-const displayPressedButton = function(buttonValue) {
+const appendToDisplay = function(buttonValue) {
+  displayElement.innerText += buttonValue;
+};
+
+const parseDisplayToFloat = function(displayString) {
+    calc.display.floatValue = Number.parseFloat(displayString);
+};
+
+const processDigitButton = function(buttonValue) {
   const characterLimit = 8;
-  if (!(display.innerText.length >= characterLimit)) {
-    if (display.innerText === defaultZero) {
-      if (buttonValue === '0') { // Do not accept leading zeros as input
-        blinkCalculatorDisplay();
-      } else { // Accept first digit of input
-        display.innerText = buttonValue;
+  const operators = ['+', '-', '*', '/'];
+  let lastInputWasOperator = false;
+  for (const op of operators) {
+    if (calc.history.lastInputAccepted === op)
+     lastInputWasOperator = true;
+  }
+  if (displayElement.innerText.length < characterLimit) {
+    if (calc.display.showingDefaultValue || lastInputWasOperator) {
+      if (buttonValue === '0') { // drop input from any leading zeros
+        blinkDisplay();
+        return;
+      } else { // button pressed was not '0'
+        writeToDisplay(buttonValue);
+        calc.display.showingDefaultValue = false;
       }
-    } else { // Accept subsequent digit of input
-      if (buttonValue === '.' && display.innerText.includes('.')) {
-        // Prevent multiple decimal points
-        blinkCalculatorDisplay();
-      } else {
-        display.innerText += buttonValue;
-      }
+    } else { // not showingDefaultValue
+      appendToDisplay(buttonValue);
     }
-     valueFromDisplay = Number.parseFloat(display.innerText);
-  } else { // Display was already full before button press
-    blinkCalculatorDisplay();
+  } else { // display full; cannot accept input
+    blinkDisplay();
+    return;
   }
+  calc.history.lastInputAccepted = buttonValue;
+  parseDisplayToFloat(displayElement.innerText);
 };
 
-//const clearDisplay = () => display.innerText = '0';
+const clearEquation = function() {
+  calc.equation.operator = undefined;
+  calc.equation.firstNumber = undefined;
+  calc.equation.secondNumber = undefined;
+};
+
 const clearDisplay = function() {
-  if (display.innerText === defaultZero) { // Display is already cleared
-    blinkCalculatorDisplay();
+  const defaultZero = '0';
+  if (displayElement.innerText === defaultZero) { //display is already cleared
+    blinkDisplay();
   } else {
-    display.innerText = defaultZero;
+    calc.display.showingDefaultValue = true;
+    displayElement.innerText = defaultZero;
+    parseDisplayToFloat(displayElement.innerText);
   }
 };
 
-document.querySelector('.clear-button').addEventListener('click',
- clearDisplay);
+const initializeOperation = function(buttonDataValue) {
+  calc.equation.firstNumber = calc.display.floatValue;
+  calc.equation.operator = buttonDataValue;
+};
 
+const operate = function(operator, firstNumber, secondNumber) {
+  const add = (x, y) => x + y;
+  const subtract = (x, y) => x - y;
+  const multiply = (x, y) => x * y;
+  const divide = (x, y) => x / y;
+
+  switch(operator) {
+    case '+':
+      return add(firstNumber, secondNumber);
+    case '-':
+      return subtract(firstNumber, secondNumber);
+    case '*':
+      return multiply(firstNumber, secondNumber);
+    case '/':
+      return divide(firstNumber, secondNumber);
+  }
+};
+
+const processOperatorButton = function(buttonDataValue) {
+  if (typeof calc.equation.firstNumber === 'undefined') {
+    blinkDisplay();
+    calc.equation.firstNumber = calc.display.floatValue;
+    calc.equation.operator = buttonDataValue;
+  } else { //firstNumber was defined already
+    if (typeof calc.equation.secondNumber === 'undefined') {
+      calc.equation.secondNumber = calc.display.floatValue;
+      displayElement.innerText = operate(calc.equation.operator,
+       calc.equation.firstNumber, calc.equation.secondNumber);
+      parseDisplayToFloat(displayElement.innerText);
+      calc.history.lastCalculation = calc.display.floatValue;
+      calc.equation.operator = buttonDataValue;
+    } else { //secondNumber was defined already
+      calc.equation.firstNumber = calc.history.lastCalculation;
+      calc.equation.secondNumber = calc.display.floatValue;
+      displayElement.innerText = operate(calc.equation.operator,
+       calc.equation.firstNumber, calc.equation.secondNumber);
+      parseDisplayToFloat(displayElement.innerText);
+      calc.history.lastCalculation = calc.display.floatValue;
+      calc.equation.operator = buttonDataValue;
+    }
+  }
+  calc.history.lastInputAccepted = buttonDataValue;
+};
+
+const clearButton = document.querySelector('.clear-button');
 const digitButtons = document.querySelectorAll('.digit-button');
+const operatorButtons = document.querySelectorAll('.operator-button');
+const evaluationButton = document.querySelector('.evaluation-button');
+
+clearButton.addEventListener('click', clearDisplay);
+clearButton.addEventListener('click', clearEquation);
 
 digitButtons.forEach(button => button.addEventListener('click', () =>
- displayPressedButton(button.dataset.number)));
+ processDigitButton(button.dataset.number)));
 
-document.querySelectorAll('.operator-button').forEach(button =>
- button.addEventListener('click', () => blinkCalculatorDisplay()));
+operatorButtons.forEach(button => button.addEventListener('click', () =>
+ processOperatorButton(button.dataset.operator)));
