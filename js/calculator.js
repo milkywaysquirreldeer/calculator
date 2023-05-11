@@ -63,6 +63,61 @@ const processDigitButton = function(buttonValue) {
   parseDisplayToFloat(displayElement.innerText);
 };
 
+const operate = function(operator, firstNumber, secondNumber) {
+  const add = (x, y) => x + y;
+  const subtract = (x, y) => x - y;
+  const multiply = (x, y) => x * y;
+  const divide = (x, y) => x / y;
+  
+    switch(operator) {
+    case '+':
+      return add(firstNumber, secondNumber);
+    case '-':
+      return subtract(firstNumber, secondNumber);
+    case '*':
+      return multiply(firstNumber, secondNumber);
+    case '/':
+      return divide(firstNumber, secondNumber);
+  }
+};
+
+const convertToDisplayString = function(number) {
+  let displayString = number.toString();
+  if (displayString.length <= 8) {
+   return displayString;
+   } else {
+    return displayString.slice(0, 8);
+  }
+};
+
+const processOperatorButton = function(buttonDataValue) {
+  if (typeof calc.equation.firstNumber === 'undefined') {
+    blinkDisplay();
+    calc.equation.firstNumber = calc.display.floatValue;
+    calc.equation.operator = buttonDataValue;
+  } else { //firstNumber was defined already
+    if (typeof calc.equation.secondNumber === 'undefined') {
+      calc.equation.secondNumber = calc.display.floatValue;
+      calc.history.lastCalculation = operate(calc.equation.operator,
+       calc.equation.firstNumber, calc.equation.secondNumber);
+      displayElement.innerText =
+       convertToDisplayString(calc.history.lastCalculation);
+      calc.display.floatValue = calc.history.lastCalculation;
+      calc.equation.operator = buttonDataValue;
+    } else { //secondNumber was defined already
+      calc.equation.firstNumber = calc.history.lastCalculation;
+      calc.equation.secondNumber = calc.display.floatValue;
+      calc.history.lastCalculation = operate(calc.equation.operator,
+       calc.equation.firstNumber, calc.equation.secondNumber);
+      displayElement.innerText =
+       convertToDisplayString(calc.history.lastCalculation);
+      calc.display.floatValue = calc.history.lastCalculation;
+      calc.equation.operator = buttonDataValue;
+    }
+  }
+  calc.history.lastInputAccepted = buttonDataValue;
+};
+
 const clearEquation = function() {
   calc.equation.operator = undefined;
   calc.equation.firstNumber = undefined;
@@ -78,55 +133,6 @@ const clearDisplay = function() {
     displayElement.innerText = defaultZero;
     parseDisplayToFloat(displayElement.innerText);
   }
-};
-
-const initializeOperation = function(buttonDataValue) {
-  calc.equation.firstNumber = calc.display.floatValue;
-  calc.equation.operator = buttonDataValue;
-};
-
-const operate = function(operator, firstNumber, secondNumber) {
-  const add = (x, y) => x + y;
-  const subtract = (x, y) => x - y;
-  const multiply = (x, y) => x * y;
-  const divide = (x, y) => x / y;
-
-  switch(operator) {
-    case '+':
-      return add(firstNumber, secondNumber);
-    case '-':
-      return subtract(firstNumber, secondNumber);
-    case '*':
-      return multiply(firstNumber, secondNumber);
-    case '/':
-      return divide(firstNumber, secondNumber);
-  }
-};
-
-const processOperatorButton = function(buttonDataValue) {
-  if (typeof calc.equation.firstNumber === 'undefined') {
-    blinkDisplay();
-    calc.equation.firstNumber = calc.display.floatValue;
-    calc.equation.operator = buttonDataValue;
-  } else { //firstNumber was defined already
-    if (typeof calc.equation.secondNumber === 'undefined') {
-      calc.equation.secondNumber = calc.display.floatValue;
-      displayElement.innerText = operate(calc.equation.operator,
-       calc.equation.firstNumber, calc.equation.secondNumber);
-      parseDisplayToFloat(displayElement.innerText);
-      calc.history.lastCalculation = calc.display.floatValue;
-      calc.equation.operator = buttonDataValue;
-    } else { //secondNumber was defined already
-      calc.equation.firstNumber = calc.history.lastCalculation;
-      calc.equation.secondNumber = calc.display.floatValue;
-      displayElement.innerText = operate(calc.equation.operator,
-       calc.equation.firstNumber, calc.equation.secondNumber);
-      parseDisplayToFloat(displayElement.innerText);
-      calc.history.lastCalculation = calc.display.floatValue;
-      calc.equation.operator = buttonDataValue;
-    }
-  }
-  calc.history.lastInputAccepted = buttonDataValue;
 };
 
 const clearButton = document.querySelector('.clear-button');
