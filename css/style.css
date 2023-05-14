@@ -36,7 +36,7 @@ footer {
   background-color: #e5e5e5;
   border: 4px solid #b0bbbc;
   border-radius: 38px;
-  height: 640px;
+  height: 580px;
   width: 456px;
 }
 
@@ -53,7 +53,7 @@ footer {
 }
 
 .calc-buttons-container {
-  height: 478px;
+  height: 400px;
 }
 
 button {
@@ -77,11 +77,6 @@ button {
 
 .blink-display {
   color: #d4cbc3;
-}
-
-.display,
-.calc-button-row > button {
-  border-radius: 6px;
 }
 
 .placeholder-button {
@@ -108,31 +103,19 @@ button {
   background-color: #b8bdc3;
 }
 
-.calc-button-row > button {
-  flex: 1;
-}
-
 .calc-buttons {
-  display: flex;
-  flex-direction: column;
-  height: 400px;
   width: 400px;
-}
-
-.small-buttons-row {
-  justify-content: right;
 }
 
 .calc-button-row {
   display: flex;
-  flex:1;
 }
 
 .calc-button-row > button {
   border: 2px solid #494949;
   flex: 1;
   font-size: 56px;
-  margin: 10px;
+  margin: 1px;
 }
 
 .calc-button-row > button:hover {
