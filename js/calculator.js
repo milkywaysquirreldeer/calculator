@@ -39,28 +39,41 @@ const processDigitButton = function(buttonValue) {
   const characterLimit = 8;
   const operators = ['+', '-', '*', '/'];
   let lastInputWasOperator = false;
+  let lastInputWasDecimal = false;
+  let displayIsFull = false;
+  
   for (const op of operators) {
     if (calc.history.lastInputAccepted === op)
      lastInputWasOperator = true;
   }
-  if (displayElement.innerText.length < characterLimit) {
-    if (calc.display.showingDefaultValue || lastInputWasOperator) {
-      if (buttonValue === '0') { // drop input from any leading zeros
-        blinkDisplay();
-        return;
-      } else { // button pressed was not '0'
-        writeToDisplay(buttonValue);
-        calc.display.showingDefaultValue = false;
-      }
-    } else { // not showingDefaultValue
-      appendToDisplay(buttonValue);
-    }
-  } else { // display full; cannot accept input
+
+  if (buttonValue === '.') 
+    lastInputWasDecimal = true;
+
+  if (displayElement.innerText.length >= characterLimit)
+   displayIsFull = true;
+
+ switch(true) {
+  //cases where input is dropped
+  case ((calc.display.showingDefaultValue || lastInputWasOperator)
+          && buttonValue === '0'):
+  case (! lastInputWasOperator && displayIsFull):
+  case (lastInputWasDecimal && displayElement.innerText.includes('.')):
     blinkDisplay();
-    return;
-  }
-  calc.history.lastInputAccepted = buttonValue;
-  parseDisplayToFloat(displayElement.innerText);
+    break;
+  //cases where input overwrites current display 
+  case ((calc.display.showingDefaultValue || lastInputWasOperator)
+          && buttonValue !== '0'):
+    writeToDisplay(buttonValue);
+    calc.display.showingDefaultValue = false;
+    calc.history.lastInputAccepted = buttonValue;
+    parseDisplayToFloat(displayElement.innerText);
+    break;
+  default: //append input to currently displayed value
+    appendToDisplay(buttonValue);
+    calc.history.lastInputAccepted = buttonValue;
+    parseDisplayToFloat(displayElement.innerText);
+ }
 };
 
 const operate = function(operator, firstNumber, secondNumber) {
@@ -83,10 +96,17 @@ const operate = function(operator, firstNumber, secondNumber) {
 
 const convertToDisplayString = function(number) {
   let displayString = number.toString();
-  if (displayString.length <= 8) {
+
+  if (displayString.length <= 8)
    return displayString;
-   } else {
-    return displayString.slice(0, 8);
+  else {
+    const eighthCharacter = parseInt(displayString.slice(7, 8));
+
+    if (eighthCharacter >= 5 ) { //round up the truncated number if appropriate
+      return (displayString.slice(0, 7)) + (eighthCharacter + 1);
+    } else {
+      return displayString.slice(0, 8);
+    }
   }
 };
 
@@ -105,16 +125,24 @@ const processOperatorButton = function(buttonDataValue) {
       calc.display.floatValue = calc.history.lastCalculation;
       calc.equation.operator = buttonDataValue;
     } else { //secondNumber was defined already
-      calc.equation.firstNumber = calc.history.lastCalculation;
-      calc.equation.secondNumber = calc.display.floatValue;
-      calc.history.lastCalculation = operate(calc.equation.operator,
-       calc.equation.firstNumber, calc.equation.secondNumber);
-      displayElement.innerText =
-       convertToDisplayString(calc.history.lastCalculation);
-      calc.display.floatValue = calc.history.lastCalculation;
-      calc.equation.operator = buttonDataValue;
+      if (calc.history.lastInputAccepted === '=') {//start new calculation
+        blinkDisplay();
+        calc.equation.firstNumber = calc.history.lastCalculation;
+        calc.equation.secondNumber = undefined;
+        calc.equation.operator = buttonDataValue;
+      } else {
+        calc.equation.firstNumber = calc.history.lastCalculation;
+        calc.equation.secondNumber = calc.display.floatValue;
+        calc.history.lastCalculation = operate(calc.equation.operator,
+        calc.equation.firstNumber, calc.equation.secondNumber);
+        displayElement.innerText =
+        convertToDisplayString(calc.history.lastCalculation);
+        calc.display.floatValue = calc.history.lastCalculation;
+        calc.equation.operator = buttonDataValue;
+      }
     }
   }
+  
   calc.history.lastInputAccepted = buttonDataValue;
 };
 
@@ -122,6 +150,11 @@ const clearEquation = function() {
   calc.equation.operator = undefined;
   calc.equation.firstNumber = undefined;
   calc.equation.secondNumber = undefined;
+};
+
+const clearHistory = function() {
+  calc.history.lastCalculation = undefined;
+  calc.history.lastInputAccepted = undefined;
 };
 
 const clearDisplay = function() {
@@ -135,6 +168,32 @@ const clearDisplay = function() {
   }
 };
 
+const processEvaluationButton = function(buttonDataValue) {
+  if (calc.history.lastInputAccepted !== '=') {
+    if (typeof calc.equation.firstNumber !== 'undefined') {
+      if (typeof calc.equation.secondNumber === 'undefined') {
+        calc.equation.secondNumber = calc.display.floatValue;
+        calc.history.lastCalculation = operate(calc.equation.operator,
+        calc.equation.firstNumber, calc.equation.secondNumber);
+        displayElement.innerText =
+         convertToDisplayString(calc.history.lastCalculation);
+        calc.display.floatValue = calc.history.lastCalculation;
+      } else {
+        calc.equation.firstNumber = calc.history.lastCalculation;
+        calc.equation.secondNumber = calc.display.floatValue;
+        calc.history.lastCalculation = operate(calc.equation.operator,
+        calc.equation.firstNumber, calc.equation.secondNumber);
+        displayElement.innerText =
+         convertToDisplayString(calc.history.lastCalculation);
+        calc.display.floatValue = calc.history.lastCalculation;
+      }
+    }
+  }
+  
+  blinkDisplay();
+  calc.history.lastInputAccepted = buttonDataValue;
+};
+
 const clearButton = document.querySelector('.clear-button');
 const digitButtons = document.querySelectorAll('.digit-button');
 const operatorButtons = document.querySelectorAll('.operator-button');
@@ -142,9 +201,13 @@ const evaluationButton = document.querySelector('.evaluation-button');
 
 clearButton.addEventListener('click', clearDisplay);
 clearButton.addEventListener('click', clearEquation);
+clearButton.addEventListener('click', clearHistory);
 
 digitButtons.forEach(button => button.addEventListener('click', () =>
  processDigitButton(button.dataset.number)));
 
 operatorButtons.forEach(button => button.addEventListener('click', () =>
  processOperatorButton(button.dataset.operator)));
+
+ evaluationButton.addEventListener('click', () =>
+ processEvaluationButton(evaluationButton.dataset.operator));
