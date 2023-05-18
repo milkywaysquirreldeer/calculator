@@ -1,7 +1,6 @@
 const calc = {
   display: {
     floatValue: 0,
-    showingDefaultValue: true,
   },
   equation: {
     operator: undefined,
@@ -28,7 +27,15 @@ const writeToDisplay = function(buttonValue) {
 };
 
 const appendToDisplay = function(buttonValue) {
-  displayElement.innerText += buttonValue;
+  if (
+      (displayElement.innerText.includes('.')
+        && buttonValue === '.')
+      || displayElement.innerText === '0'
+     ) { //drop any repeating decimal points and leading zeros
+    blinkDisplay();
+  } else { //add characters to display normally
+    displayElement.innerText += buttonValue;
+  }
 };
 
 const parseDisplayToFloat = function(displayString) {
@@ -37,43 +44,61 @@ const parseDisplayToFloat = function(displayString) {
 
 const processDigitButton = function(buttonValue) {
   const characterLimit = 8;
-  const operators = ['+', '-', '*', '/'];
-  let lastInputWasOperator = false;
-  let lastInputWasDecimal = false;
-  let displayIsFull = false;
-  
-  for (const op of operators) {
-    if (calc.history.lastInputAccepted === op)
-     lastInputWasOperator = true;
+  const operationInputs = ['+', '-', '*', '/', '='];
+  const numericInputs = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.'];
+  let lastInputWasOperation = false;
+  let lastInputWasEqualsButton = false;
+  let lastInputWasNumeric = false;
+
+  for (const operationInput of operationInputs) {
+    if (calc.history.lastInputAccepted === operationInput) {
+     lastInputWasOperation = true;
+    }
   }
 
-  if (buttonValue === '.') 
-    lastInputWasDecimal = true;
+  if (calc.history.lastInputAccepted === '=') {
+    lastInputWasEqualsButton = true;
+  }
 
-  if (displayElement.innerText.length >= characterLimit)
-   displayIsFull = true;
+  for (const numericInput of numericInputs) {
+    if (calc.history.lastInputAccepted === numericInput) {
+     lastInputWasNumeric = true;
+    }
+  }
 
- switch(true) {
-  //cases where input is dropped
-  case ((calc.display.showingDefaultValue || lastInputWasOperator)
-          && buttonValue === '0'):
-  case (! lastInputWasOperator && displayIsFull):
-  case (lastInputWasDecimal && displayElement.innerText.includes('.')):
-    blinkDisplay();
-    break;
-  //cases where input overwrites current display 
-  case ((calc.display.showingDefaultValue || lastInputWasOperator)
-          && buttonValue !== '0'):
-    writeToDisplay(buttonValue);
-    calc.display.showingDefaultValue = false;
-    calc.history.lastInputAccepted = buttonValue;
-    parseDisplayToFloat(displayElement.innerText);
-    break;
-  default: //append input to currently displayed value
-    appendToDisplay(buttonValue);
-    calc.history.lastInputAccepted = buttonValue;
-    parseDisplayToFloat(displayElement.innerText);
- }
+  if (displayElement.innerText.length < characterLimit) {
+    if (lastInputWasOperation) {
+      writeToDisplay(buttonValue);
+      if (lastInputWasEqualsButton) { /* by manually overwriting a displayed
+                                         calculation with other numeric values,
+                                         a user is opting to discard any
+                                         ongoing chain of calculations. */
+        clearEquation();
+      }
+    } else { //last value input was number or '.'
+      if (displayElement.innerText === '0') {
+        if (buttonValue === '0') {
+          blinkDisplay();
+        } else {
+            writeToDisplay(buttonValue);
+        }
+      } else {
+        appendToDisplay(buttonValue);
+      }
+    }
+  } else { //display full
+    if (lastInputWasNumeric) { //drop current input to prevent display overflow
+     blinkDisplay();
+    } else { /* user opting to overwrite calculated result with new input;
+                discard any ongoing calculations */
+             
+       writeToDisplay(buttonValue);
+       clearEquation();
+    }
+  }
+
+  calc.history.lastInputAccepted = buttonValue;
+  parseDisplayToFloat(displayElement.innerText);
 };
 
 const operate = function(operator, firstNumber, secondNumber) {
@@ -125,7 +150,7 @@ const processOperatorButton = function(buttonDataValue) {
       calc.display.floatValue = calc.history.lastCalculation;
       calc.equation.operator = buttonDataValue;
     } else { //secondNumber was defined already
-      if (calc.history.lastInputAccepted === '=') {//start new calculation
+      if (calc.history.lastInputAccepted === '=') { //start new calculation
         blinkDisplay();
         calc.equation.firstNumber = calc.history.lastCalculation;
         calc.equation.secondNumber = undefined;
@@ -150,6 +175,7 @@ const clearEquation = function() {
   calc.equation.operator = undefined;
   calc.equation.firstNumber = undefined;
   calc.equation.secondNumber = undefined;
+  calc.history.lastCalculation = undefined;
 };
 
 const clearHistory = function() {
