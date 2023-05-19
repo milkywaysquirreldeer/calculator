@@ -23,7 +23,12 @@ const blinkDisplay = function() {
 };
 
 const writeToDisplay = function(buttonValue) {
+  if (buttonValue === '.') { /* add conventional preceding zero to leading
+                                decimal points entered by user */
+    displayElement.innerText = '0.';
+  } else { //write character to display normally
   displayElement.innerText = buttonValue;
+  }
 };
 
 const appendToDisplay = function(buttonValue) {
@@ -33,13 +38,13 @@ const appendToDisplay = function(buttonValue) {
       || displayElement.innerText === '0'
      ) { //drop any repeating decimal points and leading zeros
     blinkDisplay();
-  } else { //add characters to display normally
+  } else { //add character to display normally
     displayElement.innerText += buttonValue;
   }
 };
 
 const parseDisplayToFloat = function(displayString) {
-    calc.display.floatValue = Number.parseFloat(displayString);
+  calc.display.floatValue = Number.parseFloat(displayString);
 };
 
 const processDigitButton = function(buttonValue) {
@@ -107,7 +112,7 @@ const operate = function(operator, firstNumber, secondNumber) {
   const multiply = (x, y) => x * y;
   const divide = (x, y) => x / y;
   
-    switch(operator) {
+  switch(operator) {
     case '+':
       return add(firstNumber, secondNumber);
     case '-':
@@ -159,9 +164,9 @@ const processOperatorButton = function(buttonDataValue) {
         calc.equation.firstNumber = calc.history.lastCalculation;
         calc.equation.secondNumber = calc.display.floatValue;
         calc.history.lastCalculation = operate(calc.equation.operator,
-        calc.equation.firstNumber, calc.equation.secondNumber);
+         calc.equation.firstNumber, calc.equation.secondNumber);
         displayElement.innerText =
-        convertToDisplayString(calc.history.lastCalculation);
+         convertToDisplayString(calc.history.lastCalculation);
         calc.display.floatValue = calc.history.lastCalculation;
         calc.equation.operator = buttonDataValue;
       }
@@ -188,7 +193,6 @@ const clearDisplay = function() {
   if (displayElement.innerText === defaultZero) { //display is already cleared
     blinkDisplay();
   } else {
-    calc.display.showingDefaultValue = true;
     displayElement.innerText = defaultZero;
     parseDisplayToFloat(displayElement.innerText);
   }
@@ -215,7 +219,7 @@ const processEvaluationButton = function(buttonDataValue) {
       }
     }
   }
-  
+
   blinkDisplay();
   calc.history.lastInputAccepted = buttonDataValue;
 };
@@ -235,5 +239,5 @@ digitButtons.forEach(button => button.addEventListener('click', () =>
 operatorButtons.forEach(button => button.addEventListener('click', () =>
  processOperatorButton(button.dataset.operator)));
 
- evaluationButton.addEventListener('click', () =>
+evaluationButton.addEventListener('click', () =>
  processEvaluationButton(evaluationButton.dataset.operator));
