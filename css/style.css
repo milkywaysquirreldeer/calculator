@@ -127,6 +127,10 @@ button {
   background-color: #ffe280;
 }
 
+.divide-by-zero-error {
+  color: red;
+}
+
 .left-panel {
   order: 1;
 }

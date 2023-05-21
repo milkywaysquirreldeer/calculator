@@ -11,6 +11,20 @@ const calc = {
     lastCalculation: undefined,
     lastInputAccepted: undefined,
   },
+  clearEquation: function() {
+    this.equation.operator = undefined;
+    this.equation.firstNumber = undefined;
+    this.equation.secondNumber = undefined;
+    this.history.lastCalculation = undefined;
+  },
+  resetAllValues: function() {
+    this.display.floatValue = 0;
+    this.equation.operator = undefined;
+    this.equation.firstNumber = undefined;
+    this.equation.secondNumber = undefined;
+    this.history.lastCalculation = undefined;
+    this.history.lastInputAccepted = undefined;
+  },
 };
 
 const displayElement = document.querySelector('.display');
@@ -78,7 +92,7 @@ const processDigitButton = function(buttonValue) {
                                          calculation with other numeric values,
                                          a user is opting to discard any
                                          ongoing chain of calculations. */
-        clearEquation();
+        calc.clearEquation();
       }
     } else { //last value input was number or '.'
       if (displayElement.innerText === '0') {
@@ -96,9 +110,8 @@ const processDigitButton = function(buttonValue) {
      blinkDisplay();
     } else { /* user opting to overwrite calculated result with new input;
                 discard any ongoing calculations */
-             
        writeToDisplay(buttonValue);
-       clearEquation();
+       calc.clearEquation();
     }
   }
 
@@ -140,6 +153,30 @@ const convertToDisplayString = function(number) {
   }
 };
 
+const showDivideByZeroError = function() {
+  const calcButtons = document.querySelector('.calc-buttons');
+  const divisionButton = calcButtons.querySelector('[data-operator="/"]');
+  const zeroButton = calcButtons.querySelector('[data-number="0"]');
+
+ // Show text error on display
+  displayElement.textContent = 'nope';
+  setTimeout(() => displayElement.innerText = '', 1000);
+
+ // Provide visual error via temporary restyling of buttons
+  divisionButton.classList.add('divide-by-zero-error');
+  setTimeout(() => divisionButton.classList.remove('divide-by-zero-error'),
+   1000);
+  zeroButton.classList.add('divide-by-zero-error');
+  setTimeout(() => zeroButton.classList.remove('divide-by-zero-error'), 1000);
+};
+
+const undoDivideByZero = function(numerator) {
+  /* Discard the invalid operation and restore the number that the user tried to
+     divide by zero, so that the user can try a different operation with it */
+  calc.resetAllValues();
+  setTimeout(() => processDigitButton(numerator.toString()), 1001);
+};
+
 const processOperatorButton = function(buttonDataValue) {
   if (typeof calc.equation.firstNumber === 'undefined') {
     blinkDisplay();
@@ -147,21 +184,12 @@ const processOperatorButton = function(buttonDataValue) {
     calc.equation.operator = buttonDataValue;
   } else { //firstNumber was defined already
     if (typeof calc.equation.secondNumber === 'undefined') {
-      calc.equation.secondNumber = calc.display.floatValue;
-      calc.history.lastCalculation = operate(calc.equation.operator,
-       calc.equation.firstNumber, calc.equation.secondNumber);
-      displayElement.innerText =
-       convertToDisplayString(calc.history.lastCalculation);
-      calc.display.floatValue = calc.history.lastCalculation;
-      calc.equation.operator = buttonDataValue;
-    } else { //secondNumber was defined already
-      if (calc.history.lastInputAccepted === '=') { //start new calculation
-        blinkDisplay();
-        calc.equation.firstNumber = calc.history.lastCalculation;
-        calc.equation.secondNumber = undefined;
-        calc.equation.operator = buttonDataValue;
+      if (calc.equation.operator === '/'
+          && calc.display.floatValue === 0) {
+        showDivideByZeroError();
+        undoDivideByZero(calc.equation.firstNumber);
+        return;
       } else {
-        calc.equation.firstNumber = calc.history.lastCalculation;
         calc.equation.secondNumber = calc.display.floatValue;
         calc.history.lastCalculation = operate(calc.equation.operator,
          calc.equation.firstNumber, calc.equation.secondNumber);
@@ -170,26 +198,64 @@ const processOperatorButton = function(buttonDataValue) {
         calc.display.floatValue = calc.history.lastCalculation;
         calc.equation.operator = buttonDataValue;
       }
+    } else { //secondNumber was defined already
+      if (calc.history.lastInputAccepted === '=') { //start new calculation
+        blinkDisplay();
+        calc.equation.firstNumber = calc.history.lastCalculation;
+        calc.equation.secondNumber = undefined;
+        calc.equation.operator = buttonDataValue;
+      } else {
+        if (calc.equation.operator === '/'
+            && calc.display.floatValue === 0) {
+          showDivideByZeroError();
+          undoDivideByZero(calc.history.lastCalculation);
+        } else {
+          calc.equation.firstNumber = calc.history.lastCalculation;
+          calc.equation.secondNumber = calc.display.floatValue;
+          calc.history.lastCalculation = operate(calc.equation.operator,
+           calc.equation.firstNumber, calc.equation.secondNumber);
+          displayElement.innerText =
+          convertToDisplayString(calc.history.lastCalculation);
+          calc.display.floatValue = calc.history.lastCalculation;
+          calc.equation.operator = buttonDataValue;
+        }
+      }
     }
   }
   
   calc.history.lastInputAccepted = buttonDataValue;
 };
 
-const clearEquation = function() {
-  calc.equation.operator = undefined;
-  calc.equation.firstNumber = undefined;
-  calc.equation.secondNumber = undefined;
-  calc.history.lastCalculation = undefined;
-};
+const processEvaluationButton = function(buttonDataValue) {
+  if (calc.history.lastInputAccepted !== '=') {
+    if (typeof calc.equation.firstNumber !== 'undefined') {
+      if (calc.display.floatValue === 0
+          && calc.equation.operator === '/') {
+        showDivideByZeroError();
+        undoDivideByZero(calc.equation.firstNumber);
+        return;
+      } else {
+        if (typeof calc.equation.secondNumber !== 'undefined') {
+          calc.equation.firstNumber = calc.history.lastCalculation;
+        }
+        
+        calc.equation.secondNumber = calc.display.floatValue;
+        calc.history.lastCalculation = operate(calc.equation.operator,
+         calc.equation.firstNumber, calc.equation.secondNumber);
+        displayElement.innerText =
+         convertToDisplayString(calc.history.lastCalculation);
+        calc.display.floatValue = calc.history.lastCalculation;
+      }
+    } //else no calculation arguments provided yet, so skip the above
+  } //else no calculation arguments provided yet, so skip the above
 
-const clearHistory = function() {
-  calc.history.lastCalculation = undefined;
-  calc.history.lastInputAccepted = undefined;
+  blinkDisplay();
+  calc.history.lastInputAccepted = buttonDataValue;
 };
 
 const clearDisplay = function() {
   const defaultZero = '0';
+
   if (displayElement.innerText === defaultZero) { //display is already cleared
     blinkDisplay();
   } else {
@@ -198,40 +264,13 @@ const clearDisplay = function() {
   }
 };
 
-const processEvaluationButton = function(buttonDataValue) {
-  if (calc.history.lastInputAccepted !== '=') {
-    if (typeof calc.equation.firstNumber !== 'undefined') {
-      if (typeof calc.equation.secondNumber === 'undefined') {
-        calc.equation.secondNumber = calc.display.floatValue;
-        calc.history.lastCalculation = operate(calc.equation.operator,
-        calc.equation.firstNumber, calc.equation.secondNumber);
-        displayElement.innerText =
-         convertToDisplayString(calc.history.lastCalculation);
-        calc.display.floatValue = calc.history.lastCalculation;
-      } else {
-        calc.equation.firstNumber = calc.history.lastCalculation;
-        calc.equation.secondNumber = calc.display.floatValue;
-        calc.history.lastCalculation = operate(calc.equation.operator,
-        calc.equation.firstNumber, calc.equation.secondNumber);
-        displayElement.innerText =
-         convertToDisplayString(calc.history.lastCalculation);
-        calc.display.floatValue = calc.history.lastCalculation;
-      }
-    }
-  }
-
-  blinkDisplay();
-  calc.history.lastInputAccepted = buttonDataValue;
-};
-
 const clearButton = document.querySelector('.clear-button');
 const digitButtons = document.querySelectorAll('.digit-button');
 const operatorButtons = document.querySelectorAll('.operator-button');
 const evaluationButton = document.querySelector('.evaluation-button');
 
-clearButton.addEventListener('click', clearDisplay);
-clearButton.addEventListener('click', clearEquation);
-clearButton.addEventListener('click', clearHistory);
+clearButton.addEventListener('click', () => calc.resetAllValues());
+clearButton.addEventListener('click', () => clearDisplay());
 
 digitButtons.forEach(button => button.addEventListener('click', () =>
  processDigitButton(button.dataset.number)));
