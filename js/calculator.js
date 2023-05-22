@@ -280,3 +280,64 @@ operatorButtons.forEach(button => button.addEventListener('click', () =>
 
 evaluationButton.addEventListener('click', () =>
  processEvaluationButton(evaluationButton.dataset.operator));
+
+const parseKeyboardInput = function (evt) {
+  const numpad = 'Numpad';
+  const digit = 'Digit';
+
+  for (let i = 0; i < 10; i++) {
+    if (! evt.shiftKey) {
+      if (evt.code === `${numpad}${i}`
+          || evt.code === `${digit}${i}`) {
+        processDigitButton(`${i}`);
+        return;
+      }
+    } else {
+      if (evt.code === 'Digit8') { //the user entered '*' using Shift + 8
+        processOperatorButton('*');
+        return;
+      }
+    }
+  }
+
+  switch(evt.code) {
+    case `${numpad}Decimal`:
+    case  'Period':
+      processDigitButton('.');
+      break;
+    case `${numpad}Add`:
+      processOperatorButton('+');
+      break;
+    case 'Equal':
+      if (evt.shiftKey) {
+        processOperatorButton('+');
+      }
+      break;
+    case `${numpad}Subtract`:
+    case 'Minus':
+      processOperatorButton('-');
+      break;
+    case `${numpad}Multiply`:
+      processOperatorButton('*');
+      break;
+    case `${numpad}Divide`:
+    case 'Slash':
+      evt.preventDefault(); //default behavior for '/' in FF is "find in page"
+      processOperatorButton('/');
+      break;
+    case `${numpad}Enter`:
+    case 'Enter':
+      processEvaluationButton('=');
+      break;
+    case `Escape`:
+      calc.resetAllValues();
+      clearDisplay();
+  }
+};
+
+window.addEventListener(
+  'keydown',
+  function (evt) {
+     parseKeyboardInput(evt)
+  }
+);
