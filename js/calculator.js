@@ -108,10 +108,13 @@ const processDigitButton = function(buttonValue) {
   } else { //display full
     if (lastInputWasNumeric) { //drop current input to prevent display overflow
      blinkDisplay();
-    } else { /* user opting to overwrite calculated result with new input;
-                discard any ongoing calculations */
+    } else {
        writeToDisplay(buttonValue);
-       calc.clearEquation();
+       if (lastInputWasEqualsButton) { /* user is opting to overwrite a
+                                          calculated result with new input;
+                                          discard any ongoing calculations */
+        calc.clearEquation();
+       }
     }
   }
 
