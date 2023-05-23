@@ -83,24 +83,32 @@ button {
   cursor: default;
 }
 
-.calc-button-row > .clear-button {
+.clear-button {
   background-color: #c56070;
   color: white;
+}
+
+.calc-button-row > .clear-button {
   font-size: 28px;
 }
 
-.calc-button-row > .clear-button:hover {
+.clear-button:hover {
   background-color: white;
   color: #c56070;
 }
 
-.calc-button-row > .clear-button:active {
+.clear-button:active {
   background-color: #ffe280;
   color: #c56070;
 }
 
-.operator-button {
-  background-color: #b8bdc3;
+.clear-pressed-using-keyboard {
+  background-color: #ffe280;
+  color: #c56070;
+}
+
+.digit-pressed-using-keyboard {
+  background-color: #ffe280;
 }
 
 .calc-buttons {
@@ -124,6 +132,14 @@ button {
 }
 
 .calc-button-row > button:active {
+  background-color: #ffe280;
+}
+
+.operator-button {
+  background-color: #b8bdc3;
+}
+
+.operator-pressed-using-keyboard {
   background-color: #ffe280;
 }
 

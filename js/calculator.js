@@ -156,8 +156,9 @@ const convertToDisplayString = function(number) {
   }
 };
 
+const calcButtons = document.querySelector('.calc-buttons');
+
 const showDivideByZeroError = function() {
-  const calcButtons = document.querySelector('.calc-buttons');
   const divisionButton = calcButtons.querySelector('[data-operator="/"]');
   const zeroButton = calcButtons.querySelector('[data-number="0"]');
 
@@ -287,17 +288,64 @@ evaluationButton.addEventListener('click', () =>
 const parseKeyboardInput = function (evt) {
   const numpad = 'Numpad';
   const digit = 'Digit';
+  /* Visually indicates button presses when user is using keyboard instead of
+     mouse for input */
+  const indicateKeyboardPress = function(character, buttonType) {
+    const digitPressed = 'digit-pressed-using-keyboard';
+    const operatorPressed = 'operator-pressed-using-keyboard';
+    const clearPressed = 'clear-pressed-using-keyboard';
+
+    if (buttonType === 'numeric') {
+      if (character === '.') {
+        const decimalButtonElement = calcButtons.querySelector(
+         `[data-number="."]`);
+
+        decimalButtonElement.classList.add(`${digitPressed}`);
+        setTimeout(function() {
+         decimalButtonElement.classList.remove(`${digitPressed}`)}, 100);
+      } else {
+        const digitButtonElement = calcButtons.querySelector(
+         `[data-number="${character}"]`);
+
+        digitButtonElement.classList.add(`${digitPressed}`);
+        setTimeout(function() {
+         digitButtonElement.classList.remove(`${digitPressed}`)}, 100);
+      }
+    } else if (buttonType === 'operator') {
+      const operatorButtonElement = calcButtons.querySelector(
+       `[data-operator="${character}"]`);
+
+      operatorButtonElement.classList.add(`${operatorPressed}`);
+      setTimeout(function() {
+        operatorButtonElement.classList.remove(`${operatorPressed}`)}, 100);
+    } else if (buttonType === 'clear') {
+      const clearButtonElement = calcButtons.querySelector(
+       '.clear-button');
+
+      clearButtonElement.classList.add(`${clearPressed}`);
+      setTimeout(function() {
+        clearButtonElement.classList.remove(`${clearPressed}`)}, 100);
+      clearButtonElement.classList.add()
+    }
+  };
 
   for (let i = 0; i < 10; i++) {
     if (! evt.shiftKey) {
       if (evt.code === `${numpad}${i}`
           || evt.code === `${digit}${i}`) {
+        indicateKeyboardPress(i, 'numeric');
         processDigitButton(`${i}`);
         return;
       }
     } else {
       if (evt.code === 'Digit8') { //the user entered '*' using Shift + 8
+        indicateKeyboardPress('*', 'operator');
         processOperatorButton('*');
+        return;
+      } else if (evt.code === 'Equal') { /* the user entered '+' using
+                                            Shift + '=' */
+        indicateKeyboardPress('+', 'operator');
+        processOperatorButton('+');
         return;
       }
     }
@@ -306,41 +354,46 @@ const parseKeyboardInput = function (evt) {
   switch(evt.code) {
     case `${numpad}Decimal`:
     case  'Period':
+      indicateKeyboardPress('.', 'numeric');
       processDigitButton('.');
       break;
     case `${numpad}Add`:
+      indicateKeyboardPress('+', 'operator');
       processOperatorButton('+');
-      break;
-    case 'Equal':
-      if (evt.shiftKey) {
-        processOperatorButton('+');
-      }
       break;
     case `${numpad}Subtract`:
     case 'Minus':
+      indicateKeyboardPress('-', 'operator');
       processOperatorButton('-');
       break;
     case `${numpad}Multiply`:
+      indicateKeyboardPress('*', 'operator');
       processOperatorButton('*');
       break;
     case `${numpad}Divide`:
     case 'Slash':
       evt.preventDefault(); //default behavior for '/' in FF is "find in page"
+      indicateKeyboardPress('/', 'operator');
       processOperatorButton('/');
       break;
     case `${numpad}Enter`:
     case 'Enter':
+      indicateKeyboardPress('=', 'operator');
       processEvaluationButton('=');
       break;
+    case 'Equal':
+      indicateKeyboardPress('=', 'operator');
+      processOperatorButton('=');
+      break;
     case `Escape`:
+      indicateKeyboardPress(null, 'clear');
       calc.resetAllValues();
       clearDisplay();
   }
 };
 
-window.addEventListener(
-  'keydown',
+window.addEventListener('keydown',
   function (evt) {
-     parseKeyboardInput(evt)
+    parseKeyboardInput(evt)
   }
 );
