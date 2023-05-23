@@ -33,7 +33,11 @@ const displayElement = document.querySelector('.display');
     changed in the display */
 const blinkDisplay = function() {
   displayElement.classList.add('blink-display');
-  setTimeout(() => displayElement.classList.remove('blink-display'), 100);
+  setTimeout(
+    function() {
+      displayElement.classList.remove('blink-display');
+    }
+    , 100);
 };
 
 const writeToDisplay = function(buttonValue) {
@@ -123,10 +127,25 @@ const processDigitButton = function(buttonValue) {
 };
 
 const operate = function(operator, firstNumber, secondNumber) {
-  const add = (x, y) => x + y;
-  const subtract = (x, y) => x - y;
-  const multiply = (x, y) => x * y;
-  const divide = (x, y) => x / y;
+  const add =
+    function (x, y) {
+      return x + y;
+    };
+
+  const subtract =
+    function (x, y) {
+      return x - y;
+    };
+
+  const multiply =
+    function (x, y) {
+      return x * y;
+    };
+
+  const divide =
+    function (x, y) {
+      return x / y;
+    };
   
   switch(operator) {
     case '+':
@@ -159,19 +178,32 @@ const convertToDisplayString = function(number) {
 const calcButtons = document.querySelector('.calc-buttons');
 
 const showDivideByZeroError = function() {
+  // Show text error on display
+  displayElement.textContent = 'nope';
+  setTimeout(
+    function() {
+      displayElement.innerText = '';
+    }
+    , 1000);
+
   const divisionButton = calcButtons.querySelector('[data-operator="/"]');
+
+  // Provide visual error via temporary restyling of buttons
+  divisionButton.classList.add('divide-by-zero-error');
+  setTimeout(
+    function() {
+      divisionButton.classList.remove('divide-by-zero-error');
+    }
+    , 1000);
+
   const zeroButton = calcButtons.querySelector('[data-number="0"]');
 
- // Show text error on display
-  displayElement.textContent = 'nope';
-  setTimeout(() => displayElement.innerText = '', 1000);
-
- // Provide visual error via temporary restyling of buttons
-  divisionButton.classList.add('divide-by-zero-error');
-  setTimeout(() => divisionButton.classList.remove('divide-by-zero-error'),
-   1000);
   zeroButton.classList.add('divide-by-zero-error');
-  setTimeout(() => zeroButton.classList.remove('divide-by-zero-error'), 1000);
+  setTimeout(
+    function() {
+      zeroButton.classList.remove('divide-by-zero-error');
+    }
+    , 1000);
 };
 
 const undoDivideByZero = function(numerator) {
@@ -179,8 +211,10 @@ const undoDivideByZero = function(numerator) {
      divide by zero, so that the user can try a different operation with it */
   calc.resetAllValues();
   setTimeout(
-   () => processDigitButton(convertToDisplayString(numerator.toString())), 1001
-  );
+    function() {
+      processDigitButton(convertToDisplayString(numerator.toString()));
+    }
+    , 1001);
 };
 
 const processOperatorButton = function(buttonDataValue) {
@@ -275,17 +309,43 @@ const digitButtons = document.querySelectorAll('.digit-button');
 const operatorButtons = document.querySelectorAll('.operator-button');
 const evaluationButton = document.querySelector('.evaluation-button');
 
-clearButton.addEventListener('click', () => calc.resetAllValues());
-clearButton.addEventListener('click', () => clearDisplay());
+clearButton.addEventListener('click',
+  function() {
+    calc.resetAllValues()
+  }
+);
 
-digitButtons.forEach(button => button.addEventListener('click', () =>
- processDigitButton(button.dataset.number)));
+clearButton.addEventListener('click',
+  function() {
+    clearDisplay()
+  }
+);
 
-operatorButtons.forEach(button => button.addEventListener('click', () =>
- processOperatorButton(button.dataset.operator)));
+digitButtons.forEach(
+  function(button) {
+    button.addEventListener('click',
+      function() {
+        processDigitButton(button.dataset.number);
+      }
+    )
+  }
+);
 
-evaluationButton.addEventListener('click', () =>
- processEvaluationButton(evaluationButton.dataset.operator));
+operatorButtons.forEach(
+  function(button) {
+    button.addEventListener('click',
+      function() {
+        processOperatorButton(button.dataset.operator);
+      }
+    )
+  }
+);
+
+evaluationButton.addEventListener('click',
+  function() {
+    processEvaluationButton(evaluationButton.dataset.operator);
+  }
+);
 
 const parseKeyboardInput = function (evt) {
   const numpad = 'Numpad';
@@ -303,31 +363,42 @@ const parseKeyboardInput = function (evt) {
          `[data-number="."]`);
 
         decimalButtonElement.classList.add(`${digitPressed}`);
-        setTimeout(function() {
-         decimalButtonElement.classList.remove(`${digitPressed}`)}, 100);
+        setTimeout(
+          function() {
+            decimalButtonElement.classList.remove(`${digitPressed}`);
+          }
+          , 100);
       } else {
         const digitButtonElement = calcButtons.querySelector(
          `[data-number="${character}"]`);
 
         digitButtonElement.classList.add(`${digitPressed}`);
-        setTimeout(function() {
-         digitButtonElement.classList.remove(`${digitPressed}`)}, 100);
+        setTimeout(
+          function() {
+            digitButtonElement.classList.remove(`${digitPressed}`);
+          }
+          , 100);
       }
     } else if (buttonType === 'operator') {
       const operatorButtonElement = calcButtons.querySelector(
        `[data-operator="${character}"]`);
 
       operatorButtonElement.classList.add(`${operatorPressed}`);
-      setTimeout(function() {
-        operatorButtonElement.classList.remove(`${operatorPressed}`)}, 100);
+      setTimeout(
+        function() {
+          operatorButtonElement.classList.remove(`${operatorPressed}`);
+        }
+        , 100);
     } else if (buttonType === 'clear') {
       const clearButtonElement = calcButtons.querySelector(
        '.clear-button');
 
       clearButtonElement.classList.add(`${clearPressed}`);
-      setTimeout(function() {
-        clearButtonElement.classList.remove(`${clearPressed}`)}, 100);
-      clearButtonElement.classList.add()
+      setTimeout(
+        function() {
+          clearButtonElement.classList.remove(`${clearPressed}`);
+        }
+        , 100);
     }
   };
 
