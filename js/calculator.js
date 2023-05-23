@@ -178,7 +178,9 @@ const undoDivideByZero = function(numerator) {
   /* Discard the invalid operation and restore the number that the user tried to
      divide by zero, so that the user can try a different operation with it */
   calc.resetAllValues();
-  setTimeout(() => processDigitButton(numerator.toString()), 1001);
+  setTimeout(
+   () => processDigitButton(convertToDisplayString(numerator.toString())), 1001
+  );
 };
 
 const processOperatorButton = function(buttonDataValue) {
