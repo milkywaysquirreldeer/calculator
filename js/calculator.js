@@ -269,10 +269,14 @@ const processOperatorButton = function(buttonDataValue) {
 const processEvaluationButton = function(buttonDataValue) {
   if (calc.history.lastInputAccepted !== '=') {
     if (typeof calc.equation.firstNumber !== 'undefined') {
-      if (calc.display.floatValue === 0
-          && calc.equation.operator === '/') {
+      if (calc.display.floatValue === 0 && calc.equation.operator === '/') {
+      //user is dividing by zero
         showDivideByZeroError();
-        undoDivideByZero(calc.equation.firstNumber);
+        if (typeof calc.history.lastCalculation !== 'undefined') {
+          undoDivideByZero(calc.history.lastCalculation);
+        } else {
+          undoDivideByZero(calc.equation.firstNumber);
+        }
         return;
       } else {
         if (typeof calc.equation.secondNumber !== 'undefined') {
