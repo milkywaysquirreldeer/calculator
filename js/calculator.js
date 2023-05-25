@@ -162,15 +162,15 @@ const operate = function(operator, firstNumber, secondNumber) {
 const convertToDisplayString = function(number) {
   let displayString = number.toString();
 
-  if (displayString.length <= 8)
-   return displayString;
-  else {
-    const eighthCharacter = parseInt(displayString.slice(7, 8));
-
-    if (eighthCharacter >= 5 ) { //round up the truncated number if appropriate
-      return (displayString.slice(0, 7)) + (eighthCharacter + 1);
-    } else {
-      return displayString.slice(0, 8);
+  if (displayString.length <= 8) {
+    return displayString;
+  } else {
+    if (displayString.includes('.')) {
+      return (displayString.includes('0.') ?
+        number.toPrecision(6).toString() : //leaves room for leading zero on display
+        number.toPrecision(7).toString());
+    } else { //number will display in exponential format, so leave room
+      return number.toPrecision(3).toString();
     }
   }
 };
@@ -212,7 +212,7 @@ const undoDivideByZero = function(numerator) {
   calc.resetAllValues();
   setTimeout(
     function() {
-      processDigitButton(convertToDisplayString(numerator.toString()));
+      processDigitButton(convertToDisplayString(numerator));
     }
     , 1001);
 };
