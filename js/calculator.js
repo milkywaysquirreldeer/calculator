@@ -167,7 +167,8 @@ const convertToDisplayString = function(number) {
   } else {
     if (displayString.includes('.')) {
       return (displayString.includes('0.') ?
-        number.toPrecision(6).toString() : //leaves room for leading zero on display
+        number.toPrecision(6).toString() : /* leaves room for leading zero on
+                                              the display */
         number.toPrecision(7).toString());
     } else { //number will display in exponential format, so leave room
       return number.toPrecision(3).toString();
@@ -315,13 +316,13 @@ const evaluationButton = document.querySelector('.evaluation-button');
 
 clearButton.addEventListener('click',
   function() {
-    calc.resetAllValues()
+    calc.resetAllValues();
   }
 );
 
 clearButton.addEventListener('click',
   function() {
-    clearDisplay()
+    clearDisplay();
   }
 );
 
@@ -471,6 +472,6 @@ const parseKeyboardInput = function (evt) {
 
 window.addEventListener('keydown',
   function (evt) {
-    parseKeyboardInput(evt)
+    parseKeyboardInput(evt);
   }
 );
